@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	
+	<div>
+		<textarea id="text" rows="4" cols="50"></textarea>
+		<button id="post">post</button>
+	</div>
+
+	<script type="text/javascript">
+		
+		let options = {
+			enableHighAccuracy: true,
+			timeout: 5000,
+			maximumAge: 0
+		};
+
+		function error(err) {
+			console.warn(`ERROR(${err.code}): ${err.message}`);
+		}
+
+		/*----------  Subsection comment block  ----------*/
+
+		// navigator.geolocation.watchPosition((pos)=>{
+
+		// 	document.getElementById(`post`).addEventListener(`click`, ()=>{
+		// 		if(document.getElementById(`text`).value != ``){
+		// 			console.log(pos);
+		// 			document.getElementById(`text`).value = ``
+		// 		}
+		// 	})
+
+		// }, error, options);
+
+		/*----------  Subsection comment block  ----------*/
+
+		// document.getElementById(`post`).addEventListener(`click`, ()=>{
+		// 	navigator.geolocation.getCurrentPosition((pos)=>{
+		// 		console.log(pos);
+		// 	}, error, options);
+		// })
+
+	</script>
+
+</body>
+</html>
