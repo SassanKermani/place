@@ -8,6 +8,10 @@
 	<div>
 		<textarea id="text" rows="4" cols="50"></textarea>
 		<button id="post">post</button>
+		<br>
+		<div id="spot">
+			
+		</div>
 	</div>
 
 	<script type="text/javascript">
@@ -24,17 +28,23 @@
 
 		/*----------  Subsection comment block  ----------*/
 
-		// navigator.geolocation.watchPosition((pos)=>{
+		navigator.geolocation.watchPosition((pos)=>{
 
-		// 	document.getElementById(`post`).addEventListener(`click`, ()=>{
-		// 		if(document.getElementById(`text`).value != ``){
-		// 			console.log(pos);
-		// 			document.getElementById(`text`).value = ``
-		// 		}
-		// 	})
+			document.getElementById(`post`).addEventListener(`click`, ()=>{
+				if(document.getElementById(`text`).value != ``){
+					console.log(pos);
+					console.log(typeof pos);
+					console.log(JSON.stringify(pos));
+					
+					// document.getElementById(`spot`).innerHTML = `${JSON.stringify(pos, null, 2)}`;
+					document.getElementById(`text`).value = ``
+				}
+			})
 
-		// }, error, options);
+		}, error, options);
 
+		
+		
 		/*----------  Subsection comment block  ----------*/
 
 		// document.getElementById(`post`).addEventListener(`click`, ()=>{

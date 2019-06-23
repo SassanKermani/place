@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+	
+	<!-- <img src="bruh.jpg" id="img1" /> -->
+	
+	<input type="file" id="img1">
+	<button onclick="getExif()">go</button>
+	
+	<pre>Make and model: <span id="makeAndModel"></span></pre>
+	
+	<br/>
+
+	<script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+	<script type="text/javascript">
+		// window.onload=getExif;
+
+		function getExif() {
+			console.log(`kk`);
+			// var img1 = document.getElementById("img1");
+			var img1 = document.getElementById("img1").files[0];
+			EXIF.getData(img1, function() {
+				
+				console.log(EXIF.getTag(this, `Make`));
+
+				// var make = EXIF.getTag(this, "Make");
+				// var model = EXIF.getTag(this, "Model");
+				// var makeAndModel = document.getElementById("makeAndModel");
+				// makeAndModel.innerHTML = `${make} ${model}`;
+			});
+		}
+	</script>
+</body>
+</html>
