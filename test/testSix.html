@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		body{
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+
+	<canvas id="canvas"></canvas>
+	<script type="text/javascript">
+		canvas = document.getElementById('canvas');
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+
+		window.addEventListener('resize', ()=>{
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+		});
+		let c = canvas.getContext(`2d`);
+
+		function draw(){
+			for(let i =0; i < 100; i++){
+				c.strokeStyle = `rgba(${Math.floor(Math.random() * Math.floor(255))}, ${Math.floor(Math.random() * Math.floor(255))}, ${Math.floor(Math.random() * Math.floor(255))})`;
+				c.beginPath();
+				c.arc(vw(Math.floor(Math.random() * Math.floor(100))), vh(Math.floor(Math.random() * Math.floor(100))), 20, 0, 2 * Math.PI);
+				c.stroke();
+
+				c.fillStyle = `rgba(${Math.floor(Math.random() * Math.floor(255))}, ${Math.floor(Math.random() * Math.floor(255))}, ${Math.floor(Math.random() * Math.floor(255))})`;
+				c.beginPath();
+				c.fillRect(vw(Math.floor(Math.random() * Math.floor(100))), vh(Math.floor(Math.random() * Math.floor(100))), 10, 10);
+				c.stroke();
+
+			}
+		}
+
+		function go(){
+			setTimeout(function() {
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+				c.font = "80px Kavivanar";
+				c.fillStyle = `rgba(${Math.floor(Math.random() * Math.floor(255))}, ${Math.floor(Math.random() * Math.floor(255))}, ${Math.floor(Math.random() * Math.floor(255))})`;
+				c.textAlign = "center";
+				c.fillText("Happy Birthday Lexie", vw(50), vh(50)); 
+				draw();
+				go();
+			}, 400);
+		}
+		go();
+
+		/*----------  UTIL  ----------*/
+		function vw(n){ return((window.innerWidth / 100) *  n);  }
+		function vh(n){ return((window.innerHeight / 100) *  n);  }
+	</script>
+</body>
+</html>
