@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
 	<title></title>
@@ -43,8 +43,8 @@
 
 		}, error, options);
 
-		
-		
+
+
 		/*----------  Subsection comment block  ----------*/
 
 		// document.getElementById(`post`).addEventListener(`click`, ()=>{
@@ -55,5 +55,31 @@
 
 	</script>
 
+</body>
+</html>
+ -->
+
+
+
+ <!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<h1 id="i"></h1>
+<script type="text/javascript">
+	
+	let i = 0;
+
+	navigator.geolocation.watchPosition((pos)=>{
+
+		console.log(pos);
+		i++;
+		document.getElementById(`i`).innerHTML = i;
+
+	});
+
+</script>
 </body>
 </html>

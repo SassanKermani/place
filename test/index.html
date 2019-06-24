@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+	<p id="i"></p>
+
+	<script type="text/javascript">
+		let i = 0;
+		
+		navigator.geolocation.watchPosition((pos)=>{
+
+			console.log(pos.coords);
+			i++;
+			document.getElementById(`i`).innerHTML = i;
+
+		});
+
+	</script>
+</body>
+</html>
