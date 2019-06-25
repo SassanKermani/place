@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		body{
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+<script type="text/javascript">
+	
+canvas = document.getElementById('canvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener('resize', ()=>{
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
+});
+let c = canvas.getContext(`2d`);
+
+function go(){
+	setTimeout(function() {
+
+		//clear
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+
+
+		window.requestAnimationFrame()
+
+
+	}, 100);
+}
+
+</script>
+</body>
+</html>
