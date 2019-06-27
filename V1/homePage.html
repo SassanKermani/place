@@ -18,7 +18,7 @@
 let pos = false;
 
 navigator.geolocation.watchPosition((newPos)=>{
-	// console.log(newPos.coords);
+	console.log(newPos.coords);
 	pos = newPos;
 });
 /*=====  End of GPS  ======*/
@@ -76,16 +76,10 @@ function takepicture(){
 		context.drawImage(video, 0, 0, width, height);
 
 		let data = canvas.toDataURL('image/png');
-
-		/*----------  My part  ----------*/
 		
 		video.pause();
 		startbutton.setAttribute(`hidden`, true);
 		picture = data;
-		// console.log(`data`);
-		// console.log(data);
-
-		/*----------  My part  ----------*/
 	}
 }
 /*=====  End of Picture  ======*/
@@ -94,11 +88,6 @@ function takepicture(){
 =            Section comment block            =
 =============================================*/
 document.getElementById(`post`).addEventListener(`click`, ()=>{
-	console.log(`post \n `);
-	// console.log(`picture`);
-	// console.log(picture);
-	// console.log(`pos`);
-	console.log(pos);
 
 	if(picture && pos){
 		let sendObj = JSON.stringify({
