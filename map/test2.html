@@ -17,14 +17,23 @@
 			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 		}).addTo(mymap);
 
-		L.marker([51.5, -0.09]).addTo(mymap)
-			.bindPopup("<b>Test one").on('click', function() { alert('ONE'); })
+		L.marker([39, -105]).addTo(mymap)
+			.bindPopup("<b>Test 1").on('click', function() { alert('1'); })
 
-		L.marker([0, 0]).addTo(mymap)
-			.bindPopup("<b>Test two").on('click', function() { alert('TWO'); })
+		L.marker([39, -106]).addTo(mymap)
+			.bindPopup("<b>Test 2").on('click', function() { alert('2'); })
 
-		L.marker([0.001, 0.0001]).addTo(mymap)
-			.bindPopup("<b>Test three").on('click', function() { alert('THREE'); })
+		L.marker([40, -105]).addTo(mymap)
+			.bindPopup("<b>Test 3").on('click', function() { alert('3'); })
+
+		L.marker([40, -106]).addTo(mymap)
+			.bindPopup("<b>Test 4").on('click', function() { alert('4'); })
+
+		// L.polygon([
+		// 	[51.509, -0.08],
+		// 	[51.503, -0.06],
+		// 	[51.51, -0.047]
+		// ]).addTo(mymap).bindPopup("I am a polygon.");
 
 	</script>
 </body>
