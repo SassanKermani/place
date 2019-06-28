@@ -24,13 +24,14 @@
 		#box2{
 			max-width:100%;
 			max-height:100%;
-			background-color: blue;
+			/*background-color: blue;*/
 			padding: 1%;
 		}
 		#box3{
 			max-width:100%;
 			max-height:100%;
-			background-color: green;
+			/*background-color: green;*/
+			padding: 1%;
 		}
 	</style>
 </head>
@@ -43,13 +44,14 @@
 		<textarea id="text"></textarea>
 		<button id="post">post</button>
 	</div>
-	<div id="box3">three</div>
-
+	<div id="box3">
+		<img id="imgPost" >
+		<p id="postText"></p>
+	</div>
 	<script type="text/javascript">
 	/*============================
 	=            vars            =
 	============================*/
-	
 	// GPS
 	let pos = false;
 
@@ -84,6 +86,7 @@
 				maxZoom: 18,
 				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 			}).addTo(mymap);
+			getData();
 		}
 		console.log(newPos.coords);
 		pos = newPos;
@@ -131,8 +134,9 @@
 
 			let data = canvas.toDataURL('image/png');
 			
-			video.pause();
-			startbutton.setAttribute(`hidden`, true);
+			video.play();
+			setTimeout(function() {video.pause();}, 100);
+			// startbutton.setAttribute(`hidden`, true);
 			picture = data;
 		}
 	}
@@ -145,15 +149,37 @@
 		if(picture && pos){
 
 			let sendObj = {
-				name : `${pos.coords.latitude} ${pos.coords.longitude}`,
+				name : `${pos.coords.latitude}@${pos.coords.longitude}`,
 				pic : picture,
-				coords : pos,
+				latitude : pos.coords.latitude,
+				longitude : pos.coords.longitude,
 				text : document.getElementById(`text`).value
 			};
-			console.log(JSON.stringify(sendObj));
+			// console.log(JSON.stringify(sendObj));
 
-			L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(mymap)
-				.bindPopup(sendObj.text)//.on('click', function() { alert(sendObj.text); })
+			// L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(mymap)
+			// 	.bindPopup(sendObj.text)//.on('click', function() { alert(sendObj.text); })
+
+			console.log(`pos`);
+			console.log(pos);
+
+			console.log(`sendObj`);
+			console.log(JSON.parse(JSON.stringify(sendObj)));
+
+			let ajax = new XMLHttpRequest();
+			ajax.open("POST", "/addData", true);
+			ajax.onreadystatechange = function(){
+				ajax.onreadystatechange = function(){
+					if(this.readyState == 4 && this.status == 200) {
+						console.log(ajax.responseText);
+					}else{
+						ajax.onreadystatechange = function() {
+							console.log(ajax.responseText);
+						}
+					}
+				}
+			}
+			ajax.send(JSON.stringify(sendObj));
 
 			document.getElementById(`text`).value = ``;
 			picture = false;;
@@ -161,16 +187,47 @@
 		}
 	});
 	/*=====  End of POST  ======*/
+	/*================================
+	=            Get Data            =
+	================================*/
+	function getData(){
+		let ajax = new XMLHttpRequest();
+		ajax.open(`POST`, `/getData`, true);
+		ajax.onreadystatechange = function(){
+			if(this.readyState == 4 && this.status == 200) {
+				console.log(ajax.responseText);
+				let arr = JSON.parse(ajax.responseText).arr
+				for(let i = 0; i < arr.length; i++){
+					L.marker([pos.coords.latitude, pos.coords.longitude])
+						.addTo(mymap)
+						.on('click', function(){ 
+							// alert(arr[i]);
+							// let temp = arr[i];
+							let ajaxTwo = new XMLHttpRequest();
+							ajaxTwo.open(`POST`, `/getFile`, true);
+							ajaxTwo.onreadystatechange = function(){
+								if(this.readyState == 4 && this.status == 200) {
+									console.log(JSON.parse(ajaxTwo.responseText));
+								}else{
+									ajaxTwo.onreadystatechange = function() {
 
-	/*----------  TEST  ----------*/
-	/*============================
-	=            TEST            =
-	============================*/
-	
-	/*=====  End of TEST  ======*/
-	/*----------  TEST  ----------*/
+										let obj = JSON.parse(ajaxTwo.responseText);
+										console.log(obj.pic);
 
-
+										/*----------  HEAR  ----------*/
+										document.getElementById(`imgPost`).setAttribute('src', obj.pic);
+										document.getElementById(`postText`).innerHTML = obj.text;
+									}
+								}
+							}
+							ajaxTwo.send(JSON.stringify({file : arr[i]}));
+						});
+				}
+			}
+		}
+		ajax.send();
+	}
+	/*=====  End of Get Data  ======*/
 	</script>
 
 </body>
