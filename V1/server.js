@@ -57,7 +57,7 @@ function addData(req, res){
 		console.log(body);
 
 		// fs.writeFile(`data/${body.name}@${Math.random()}.txt`, JSON.stringify(body), (err) => {
-			fs.writeFile(`data/${body.name}.txt`, JSON.stringify(body), (err) => {
+			fs.writeFile(`data/${body.name}@.txt`, JSON.stringify(body), (err) => {
 			if (err) throw err;
 			console.log('The file has been saved!');
 		});
