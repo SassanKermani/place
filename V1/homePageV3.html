@@ -17,9 +17,17 @@
 </head>
 <body>
 
-	<div id="map"></div>
-	<button id="center">center</button>
-	<button id="draw">draw</button>
+	<div style="float: left;">
+		<div id="map"></div>
+		<button id="center">center</button>
+		<button id="draw">draw</button>
+	</div>
+
+	<div style="float: right;">
+		<br>
+		<img id="imgPost">
+		<p id="postText"></p>
+	</div>
 
 <script type="text/javascript">
 
@@ -36,7 +44,7 @@
 				maxZoom: 18,
 				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 			}).addTo(mymap);
-			// document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+			document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
 			getData()
 
 			// // updates when user moves map
@@ -64,14 +72,6 @@
 			markers[i].remove()
 		}
 
-		// let height = mymap.getBounds()._northEast.lat - mymap.getBounds()._southWest.lat;
-		// let width = mymap.getBounds()._northEast.lng - mymap.getBounds()._southWest.lng;
-		// // console.log(`\n height: ${height} \n width: ${width}`);
-
-		// let latGroup = Math.abs(mymap.getBounds()._northEast.lat - mymap.getBounds()._southWest.lat) / 100;
-		// let lngGroup = Math.abs(mymap.getBounds()._northEast.lng - mymap.getBounds()._southWest.lng) / 100;
-		// console.log(`\n latGroup: ${latGroup} \n lngGroup: ${lngGroup}`);
-
 		let maxlat = mymap.getBounds()._northEast.lat;
 		let minlat = mymap.getBounds()._southWest.lat;
 		let maxlng = mymap.getBounds()._northEast.lng;
@@ -93,7 +93,27 @@
 							L.marker([responseText.arr[i].split(`@`)[0], responseText.arr[i].split(`@`)[1]])
 								.addTo(mymap)
 								.on('click', function(){
-									console.log(responseText.arr[i]);
+									// console.log(responseText.arr[i]);
+
+									let ajaxTwo = new XMLHttpRequest();
+									ajaxTwo.open(`POST`, `/getFile`, true);
+									ajaxTwo.onreadystatechange = function(){
+										if(this.readyState == 4 && this.status == 200) {
+											console.log(JSON.parse(ajaxTwo.responseText));
+										}else{
+											ajaxTwo.onreadystatechange = function() {
+
+												let obj = JSON.parse(ajaxTwo.responseText);
+												// console.log(obj.pic);
+
+												/*----------  HEAR  ----------*/
+												document.getElementById(`imgPost`).setAttribute('src', obj.pic);
+												document.getElementById(`postText`).innerHTML = obj.text;
+											}
+										}
+									}
+									ajaxTwo.send(JSON.stringify({file : responseText.arr[i]}));
+
 								})
 						)
 					}					

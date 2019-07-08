@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+	<style type="text/css">
+		body{
+			margin: 0px;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			grid-template-rows: 1fr 1fr
+		}
+		#mapDiv{
+			/*max-width:100%;*/
+			/*max-height:100%;*/
+			
+			height: 100vh;
+			width: 50vw;
+
+			/*background-color: red;*/
+			grid-row: 1/3;
+		}
+		#map{
+			height: 90vh;
+			width: 50vw;
+		}
+		#box2{
+			max-width:100%;
+			max-height:100%;
+			/*background-color: blue;*/
+			padding: 1%;
+		}
+		#box3{
+			max-width:100%;
+			max-height:100%;
+			/*background-color: green;*/
+			padding: 1%;
+		}
+	</style>
+</head>
+<body>
+	<div id="mapDiv">
+		<div id="map"></div>
+		<button id="center">center</button>
+		<button id="draw">draw</button>
+	</div>
+
+	<div id="box2">
+		<video id="video">Video stream not available.</video>
+		<canvas hidden="" id="canvas"> </canvas>
+		<button id="startbutton">Take photo</button> 
+		<textarea id="text"></textarea>
+		<button id="post">post</button>
+	</div>
+	<div id="box3">
+		<img id="imgPost" >
+		<p id="postText"></p>
+	</div>
+
+	<script type="text/javascript">
+
+	let pos = false;
+	let mymap;
+	let center = document.getElementById('center');
+	let draw = document.getElementById('draw')
+	let markers = [];
+
+	// navigator.geolocation.getCurrentPosition((pos)=>{console.log(pos)},()=>{console.log(`err`)},{timeout:10000});
+
+	navigator.geolocation.watchPosition((newPos)=>{
+		if(!pos){
+			mymap = L.map('map').setView([newPos.coords.latitude, newPos.coords.longitude], 12);				//cange this 12 to a 15 latter
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				maxZoom: 18,
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(mymap);
+			document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+			getData()
+
+			// // updates when user moves map
+			// mymap.on('moveend', function () {
+			// 	console.log(`moveend`);
+			// });
+			
+		}
+		console.log(newPos.coords);
+		pos = newPos;
+	},()=>{
+		mymap = L.map('map').setView([0, 0], 1);				//cange this 12 to a 15 latter
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				maxZoom: 18,
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(mymap);
+			document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+			getData()
+	},{timeout:1000});
+
+	//centers map
+	center.onclick = ()=>{
+		mymap.setView([pos.coords.latitude, pos.coords.longitude], 12);				//cange this 12 to a 15 latter
+	}
+
+	draw.onclick = ()=>{
+		getData();
+	}
+
+	function getData(){
+
+		for(let i = 0; i < markers.length; i++){
+			markers[i].remove()
+		}
+
+		let maxlat = mymap.getBounds()._northEast.lat;
+		let minlat = mymap.getBounds()._southWest.lat;
+		let maxlng = mymap.getBounds()._northEast.lng;
+		let minlng = mymap.getBounds()._southWest.lng;
+		// console.log(`\n maxlng: ${maxlng} \n minlng: ${minlng} \n maxlat: ${maxlat} \n minlat: ${minlat} \n`)
+
+		let ajax = new XMLHttpRequest();
+		ajax.open("POST", "/getData", true);
+		ajax.onreadystatechange = function(){
+			ajax.onreadystatechange = function(){
+				if(this.readyState == 4 && this.status == 200) {
+					// console.log(ajax.responseText);
+					console.log(JSON.parse(ajax.responseText));
+					let responseText = JSON.parse(ajax.responseText).arr;
+					let tempPoints = [];
+					for(let i = 0; i < responseText.length; i++){
+						tempPoints[i] = [];
+						tempPoints[i][0] = responseText[i].split(`@`)[0];
+						tempPoints[i][1] = responseText[i].split(`@`)[1];
+						tempPoints[i][2] = responseText[i];
+					}
+					
+					// console.log(tempPoints);
+					let numSqur = 20;
+					let southWest = mymap.getBounds()._southWest;
+					let northEast = mymap.getBounds()._northEast;
+
+					let latIncrement = (southWest.lat - northEast.lat) / numSqur;
+					let lngIncrement = (northEast.lng - southWest.lng) / numSqur;
+					
+					let arr = [];
+
+					for(let i = 0; i <numSqur; i++){
+						arr[i] = [];
+						for(let ii = 0; ii <numSqur; ii++){
+							arr[i][ii] = [];
+							for(let iii = 0; iii < tempPoints.length; iii++){
+								if(tempPoints[iii][0] >= northEast.lat + (latIncrement * (i + 1)) && tempPoints[iii][0] <= northEast.lat + (latIncrement * i) && northEast.lng - (lngIncrement * ii) >= tempPoints[iii][1] && northEast.lng - (lngIncrement * (ii + 1)) <= tempPoints[iii][1]){
+									arr[i][ii].push(tempPoints[iii]);
+								}
+							}
+
+							// console.log(arr[i][ii]);
+
+							if(arr[i][ii].length < 2 && arr[i][ii].length > 0){
+								markers.push(
+									L.marker([arr[i][ii][0][0], arr[i][ii][0][1]])
+										.addTo(mymap)
+										// .bindPopup(`1`)
+										.on('click', function(){
+											// console.log(responseText.arr[i]);
+
+											let ajaxTwo = new XMLHttpRequest();
+											ajaxTwo.open(`POST`, `/getFile`, true);
+											ajaxTwo.onreadystatechange = function(){
+												if(this.readyState == 4 && this.status == 200) {
+													console.log(JSON.parse(ajaxTwo.responseText));
+												}else{
+													ajaxTwo.onreadystatechange = function() {
+
+														let obj = JSON.parse(ajaxTwo.responseText);
+														// console.log(obj.pic);
+
+														/*----------  HEAR  ----------*/
+														document.getElementById(`imgPost`).setAttribute('src', obj.pic);
+														document.getElementById(`postText`).innerHTML = obj.text;
+													}
+												}
+											}
+											ajaxTwo.send(JSON.stringify({file : arr[i][ii][0][2]}));
+
+										})
+								);
+							}else if(arr[i][ii].length > 0){
+								markers.push(
+									L.polygon([
+										[northEast.lat + (latIncrement * i), northEast.lng - (lngIncrement * ii)],
+										[northEast.lat + (latIncrement * (i + 1)), northEast.lng - (lngIncrement * ii)],
+										[northEast.lat + (latIncrement * (i + 1)), northEast.lng - (lngIncrement * (ii + 1))],
+										[northEast.lat + (latIncrement * i), northEast.lng - (lngIncrement * (ii + 1))]
+									]).addTo(mymap).bindPopup(`${arr[i][ii].length}`)
+									.on('click', function(){
+										// console.log(`${arr[i][ii].length}`);
+										// new
+
+									})
+								);
+							}
+						}
+					}
+
+				}else{
+					console.log(`broke`);
+				}
+			}
+		}
+		ajax.send(JSON.stringify({ maxlat : maxlat, minlat : minlat, maxlng : maxlng, minlng : minlng}));
+
+	}
+
+	/*===============================
+	=            Picture            =
+	===============================*/
+	navigator.mediaDevices.getUserMedia({video: true, audio: false})
+		.then(function(stream){
+			video.srcObject = stream;
+			video.play();
+		})
+		.catch(function(err){
+			console.log("An error occurred: " + err);
+		});
+
+	video.addEventListener('canplay', function(ev){
+		if (!streaming){
+			height = video.videoHeight / (video.videoWidth/width);
+		
+			if (isNaN(height)){
+				height = width / (4/3);
+			}
+		
+			video.setAttribute('width', width);
+			video.setAttribute('height', height);
+			canvas.setAttribute('width', width);
+			canvas.setAttribute('height', height);
+			streaming = true;
+		}
+	}, false);
+
+	startbutton.addEventListener('click', function(ev){
+			takepicture();
+			ev.preventDefault();
+		}, false);
+
+	function takepicture(){
+		let context = canvas.getContext('2d');
+		if (width && height){
+			canvas.width = width;
+			canvas.height = height;
+			context.drawImage(video, 0, 0, width, height);
+
+			let data = canvas.toDataURL('image/png');
+			
+			video.play();
+			setTimeout(function() {video.pause();}, 100);
+			// startbutton.setAttribute(`hidden`, true);
+			picture = data;
+		}
+	}
+	/*=====  End of Picture  ======*/
+	/*============================
+	=            POST            =
+	============================*/
+	document.getElementById(`post`).addEventListener(`click`, ()=>{
+
+		if(picture && pos){
+
+			let sendObj = {
+				name : `${pos.coords.latitude}@${pos.coords.longitude}`,
+				pic : picture,
+				latitude : pos.coords.latitude,
+				longitude : pos.coords.longitude,
+				text : document.getElementById(`text`).value
+			};
+			// console.log(JSON.stringify(sendObj));
+
+			// L.marker([pos.coords.latitude, pos.coords.longitude]).addTo(mymap)
+			// 	.bindPopup(sendObj.text)//.on('click', function() { alert(sendObj.text); })
+
+			console.log(`pos`);
+			console.log(pos);
+
+			console.log(`sendObj`);
+			console.log(JSON.parse(JSON.stringify(sendObj)));
+
+			let ajax = new XMLHttpRequest();
+			ajax.open("POST", "/addData", true);
+			ajax.onreadystatechange = function(){
+				ajax.onreadystatechange = function(){
+					if(this.readyState == 4 && this.status == 200) {
+						console.log(ajax.responseText);
+					}else{
+						ajax.onreadystatechange = function() {
+							console.log(ajax.responseText);
+						}
+					}
+				}
+			}
+			ajax.send(JSON.stringify(sendObj));
+
+			document.getElementById(`text`).value = ``;
+			picture = false;;
+			video.play();
+		}
+	});
+	/*=====  End of POST  ======*/
+
+	/*----------  UTIl  ----------*/
+	function sleep(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>V4</title>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster-src.js" integrity="sha256-UxMFwvJ2+HaHDi1Ik5WYCuUcv1yS+hS5QYitB0ev0JQ=" crossorigin="anonymous"></script>
+
+	<style type="text/css">
+		#map{
+			width: 80vh;
+			height: 80vh;
+		}
+	</style>
+
+</head>
+<body>
+
+	<div style="float: left;">
+		<div id="map"></div>
+		<button id="center">center</button>
+		<button id="draw">draw</button>
+	</div>
+
+	<div style="float: right;">
+		<br>
+		<img id="imgPost">
+		<p id="postText"></p>
+	</div>
+
+<script type="text/javascript">
+
+	let pos = false;
+	let mymap;
+	let center = document.getElementById('center');
+	let draw = document.getElementById('draw')
+	let markers = [];
+
+	// navigator.geolocation.getCurrentPosition((pos)=>{console.log(pos)},()=>{console.log(`err`)},{timeout:10000});
+
+	navigator.geolocation.watchPosition((newPos)=>{
+		if(!pos){
+			mymap = L.map('map').setView([newPos.coords.latitude, newPos.coords.longitude], 12);				//cange this 12 to a 15 latter
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				maxZoom: 18,
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(mymap);
+			document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+			getData()
+
+			// // updates when user moves map
+			// mymap.on('moveend', function () {
+			// 	console.log(`moveend`);
+			// });
+			
+		}
+		console.log(newPos.coords);
+		pos = newPos;
+	},()=>{
+		mymap = L.map('map').setView([0, 0], 1);				//cange this 12 to a 15 latter
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				maxZoom: 18,
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(mymap);
+			document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+			getData()
+	},{timeout:1000});
+
+	//centers map
+	center.onclick = ()=>{
+		mymap.setView([pos.coords.latitude, pos.coords.longitude], 12);				//cange this 12 to a 15 latter
+	}
+
+	draw.onclick = ()=>{
+		getData();
+	}
+
+	function getData(){
+
+		for(let i = 0; i < markers.length; i++){
+			markers[i].remove()
+		}
+
+		let maxlat = mymap.getBounds()._northEast.lat;
+		let minlat = mymap.getBounds()._southWest.lat;
+		let maxlng = mymap.getBounds()._northEast.lng;
+		let minlng = mymap.getBounds()._southWest.lng;
+		// console.log(`\n maxlng: ${maxlng} \n minlng: ${minlng} \n maxlat: ${maxlat} \n minlat: ${minlat} \n`)
+
+		let ajax = new XMLHttpRequest();
+		ajax.open("POST", "/getData", true);
+		ajax.onreadystatechange = function(){
+			ajax.onreadystatechange = function(){
+				if(this.readyState == 4 && this.status == 200) {
+					// console.log(ajax.responseText);
+					console.log(JSON.parse(ajax.responseText));
+					let responseText = JSON.parse(ajax.responseText);
+					
+					//this only wokrs in the USA
+					let topRightLng = mymap.getBounds()._southWest.lng;
+					let mapWidth =  Math.abs(mymap.getBounds()._southWest.lng) - Math.abs(mymap.getBounds()._northEast.lng);
+					let widthIncrementBy = (Math.abs(mymap.getBounds()._southWest.lng) - Math.abs(mymap.getBounds()._northEast.lng)) / 10;
+
+					let topRightLat = mymap.getBounds()._northEast.lat;
+					let mapHight = mymap.getBounds()._northEast.lat - mymap.getBounds()._southWest.lat;
+					let hightIncrementBy = (mymap.getBounds()._northEast.lat - mymap.getBounds()._southWest.lat) / 10;
+
+					console.log(`topRightLng: ${topRightLng}`);
+					console.log(`mapWidth: ${mapWidth}`);
+					console.log(`widthIncrementBy: ${widthIncrementBy}`);
+
+					console.log(`topRightLat: ${topRightLat}`);
+					console.log(`mapHight: ${mapHight}`);
+					console.log(`hightIncrementBy: ${hightIncrementBy}`);
+
+					for(let i = 0; i < 10; i++){
+						for(let ii = 0; ii < 10; ii++){
+							let ok = 0;
+							for(let iii = 0; iii < responseText.arr.length; iii++){
+								if(responseText.arr[iii].split(`@`)[0] >= (topRightLng + (i  * widthIncrementBy)) && responseText.arr[iii].split(`@`)[0] <= (topRightLng + (i  * (widthIncrementBy + 1))) && /**/ responseText.arr[iii].split(`@`)[1] >= (topRightLat + (i  * hightIncrementBy)) && responseText.arr[iii].split(`@`)[1] <= (topRightLat + (i  * (hightIncrementBy + 1))) ){
+									ok++;
+									console.log(`\n TO MUCH STUFF \n`)
+								}
+							}
+							if(ok > 3){
+
+							}else{
+								for(let iii = 0; iii < responseText.arr.length; iii++){
+									// console.log(responseText.arr[iii]);
+									markers.push( 
+										L.marker([responseText.arr[iii].split(`@`)[0], responseText.arr[iii].split(`@`)[1]])
+											.addTo(mymap)
+											.on('click', function(){
+												// console.log(responseText.arr[iii]);
+
+												let ajaxTwo = new XMLHttpRequest();
+												ajaxTwo.open(`POST`, `/getFile`, true);
+												ajaxTwo.onreadystatechange = function(){
+													if(this.readyState == 4 && this.status == 200) {
+														console.log(JSON.parse(ajaxTwo.responseText));
+													}else{
+														ajaxTwo.onreadystatechange = function() {
+
+															let obj = JSON.parse(ajaxTwo.responseText);
+															// console.log(obj.pic);
+
+															/*----------  HEAR  ----------*/
+															document.getElementById(`imgPost`).setAttribute('src', obj.pic);
+															document.getElementById(`postText`).innerHTML = obj.text;
+														}
+													}
+												}
+												ajaxTwo.send(JSON.stringify({file : responseText.arr[iii]}));
+
+											})
+									)
+								}
+							}
+						}	
+					}
+
+					// for(let i = 0; i < responseText.arr.length; i++){
+					// 	// console.log(responseText.arr[i]);
+					// 	markers.push( 
+					// 		L.marker([responseText.arr[i].split(`@`)[0], responseText.arr[i].split(`@`)[1]])
+					// 			.addTo(mymap)
+					// 			.on('click', function(){
+					// 				// console.log(responseText.arr[i]);
+
+					// 				let ajaxTwo = new XMLHttpRequest();
+					// 				ajaxTwo.open(`POST`, `/getFile`, true);
+					// 				ajaxTwo.onreadystatechange = function(){
+					// 					if(this.readyState == 4 && this.status == 200) {
+					// 						console.log(JSON.parse(ajaxTwo.responseText));
+					// 					}else{
+					// 						ajaxTwo.onreadystatechange = function() {
+
+					// 							let obj = JSON.parse(ajaxTwo.responseText);
+					// 							// console.log(obj.pic);
+
+					// 							/*----------  HEAR  ----------*/
+					// 							document.getElementById(`imgPost`).setAttribute('src', obj.pic);
+					// 							document.getElementById(`postText`).innerHTML = obj.text;
+					// 						}
+					// 					}
+					// 				}
+					// 				ajaxTwo.send(JSON.stringify({file : responseText.arr[i]}));
+
+					// 			})
+					// 	)
+					// }
+
+				}else{
+					console.log(`broke`);
+				}
+			}
+		}
+		ajax.send(JSON.stringify({ maxlat : maxlat, minlat : minlat, maxlng : maxlng, minlng : minlng}));
+
+	}
+
+
+
+	/*----------  UTIl  ----------*/
+	function sleep(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
+
+</script>
+</body>
+</html>
