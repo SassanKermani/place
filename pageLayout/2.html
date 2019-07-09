@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+	<title></title>
+	<style type="text/css">
+		body{
+			margin: 0px;
+			display: grid;
+		}
+		#map{
+			/*background-color: red;*/
+			width: 100vw;
+			height: 90vh;
+		}
+		#navBar{
+			background-color: green;
+			width: 100vw;
+			height: 10vh;
+		}
+		#content{
+			background-color: blue;
+			width: 0vw;
+			height: 100vh;
+		}
+
+	</style>
+	<style type="text/css">
+		.navBarButton{
+			/*change to use gridvew later*/
+			background-color: yellow;
+			width: 33vw;
+			height: 100%
+		}
+		.fontLarge{
+			font-size: large;
+			margin: 0px;
+		}
+		#videoContaner{
+			overflow: hidden;
+			width: 23vw;
+			height: 17vw;
+			display: inline-block;
+			border-radius: 10%;
+		}
+		#video{
+			width: 23vw !important;
+			height: auto !important;
+		}
+		.imgDiv{
+			overflow: hidden;
+			width: 23vw;
+			height: 17vw;
+			display: inline-block;
+			border-radius: 10%;
+		}
+		.img{
+			width: 23vw;
+			height: 17vw;
+		}
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+	<div id="navBar">
+		<button id="btnContent" class="navBarButton"><p class="fontLarge">content</p></button>
+		<button id="btnPost" class="navBarButton"><p class="fontLarge">post</p></button>
+		<button id="btnMap" class="navBarButton"><p class="fontLarge">map</p></button>
+	</div>
+	<div id="content">
+		<div id="post" hidden="true">
+			<div id="videoContaner">
+				<video id="video"></video>
+			</div>
+			<canvas hidden="" id="canvas"> </canvas>
+			<div id="pictureDiv" class="imgDiv" hidden="true">
+				<img id="picture" class="img" hidden="true">	
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+
+		let postion = false;
+		let map;
+
+		// buttons
+		let btnMap = document.getElementById('btnMap');
+		let btnPost = document.getElementById('btnPost');
+		let btnContent = document.getElementById('btnContent');
+
+		let mapHeight = 90;
+		let navBarHeight = 10; 
+		let contentHeight = 0;
+
+		let video = document.getElementById('video');
+		let canvas = document.getElementById('canvas');
+
+		navigator.geolocation.watchPosition((newPos)=>{
+			if(!postion){
+
+				postion = newPos;
+				
+				map = L.map('map').setView([newPos.coords.latitude, newPos.coords.longitude], 12);							//cange this 12 to a 15 latter
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}).addTo(map);
+				// document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+			}
+			if(postion == `NAN`){
+				map.setView([newPos.coords.latitude, newPos.coords.longitude], 12);											//may be bad later
+			}
+			postion = newPos;
+
+			// get data
+
+		}, ()=>{
+
+			map = L.map('map').setView([0, 0], 1);
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}).addTo(map);
+				document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+
+				postion = `NAN`;					//this is important 
+
+		}, {timeout:2000});
+
+		/*----------  Picture  ----------*/
+		function takePhoto(){
+			navigator.mediaDevices.getUserMedia({video: true, audio: false})
+			.then(function(stream){
+				// video.width = 320;
+				video.srcObject = stream;
+				video.play();
+				document.getElementById(`takePhoto`).removeAttribute(`hidden`);
+				photo.onclick = ()=>{
+					let context = canvas.getContext('2d');
+					// context.drawImage(video, 0, 0, video.videoWidth, video.videoWidth / (4/3));
+					// context.drawImage(video, 0, 0, 100, 100);
+					context.drawImage(video, 0,0, canvas.width, canvas.height);
+					dataURL = canvas.toDataURL('image/png');
+					document.getElementById(`picture`).setAttribute('src', dataURL);
+					// video.pause()
+				}
+			})
+			.catch(function(err){
+				console.log("An error occurred: " + err);
+			});
+		}
+		takePhoto();
+
+		/*----------  Anamations 2.0  ----------*/
+		// MAP
+		btnMap.onclick = btnMapAnamation;
+		function btnMapAnamation(){
+			console.log(`btnMapAnamation`);
+			document.getElementsByTagName('style')[0].innerHTML = ``;
+			if(mapHeight > 90){
+				mapHeight--;
+			}
+			if(mapHeight < 90){
+				mapHeight++
+			}
+			if(navBar > 10){
+				navBar--;
+			}
+			if(navBar < 10){
+				navBar++
+			}
+			if(contentHeight > 0){
+				contentHeight--;
+			}
+
+			document.getElementsByTagName('style')[0].innerHTML = `
+			body{
+				margin: 0px;
+				display: grid;
+			}
+			#map{
+				background-color: red;
+				width: 100vw;
+				height: ${mapHeight}vh;
+			}
+			#navBar{
+				background-color: green;
+				width: 100vw;
+				height: ${navBarHeight}vh;
+			}
+			#content{
+				background-color: blue;
+				width: 100vw;
+				height: ${contentHeight}vh;
+			}`;
+
+			if(mapHeight != 90 | navBarHeight != 10 | contentHeight != 0){
+				requestAnimationFrame(btnMapAnamation);
+			}else{
+				// map.invalidateSize();
+			}
+			map.invalidateSize();
+		}
+
+		//POST
+		btnContent.onclick = btnContentAnamation;
+		btnPost.onclick = btnContentAnamation;
+		function btnContentAnamation(){
+			console.log(`btnContentAnamation`);
+			document.getElementsByTagName('style')[0].innerHTML = ``;
+			if(mapHeight > 0){
+				mapHeight--;
+			}
+			if(mapHeight < 0){
+				mapHeight++
+			}
+			if(navBar > 10){
+				navBar--;
+			}
+			if(navBar < 10){
+				navBar++
+			}
+			if(contentHeight > 90){
+				contentHeight--;
+			}
+			if(contentHeight < 90){
+				contentHeight++
+			}
+
+			document.getElementsByTagName('style')[0].innerHTML = `
+			body{
+				margin: 0px;
+				display: grid;
+			}
+			#map{
+				background-color: red;
+				width: 100vw;
+				height: ${mapHeight}vh;
+			}
+			#navBar{
+				background-color: green;
+				width: 100vw;
+				height: ${navBarHeight}vh;
+			}
+			#content{
+				background-color: blue;
+				width: 100vw;
+				height: ${contentHeight}vh;
+			}`;
+
+			if(mapHeight != 0 | navBarHeight != 10 | contentHeight != 90){
+				requestAnimationFrame(btnContentAnamation);
+			}else{
+				map.invalidateSize();
+			}
+			map.invalidateSize();
+		}
+
+	</script>
+</body>
+</html> 

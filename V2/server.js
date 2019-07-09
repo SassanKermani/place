@@ -61,7 +61,7 @@ function getData(req, res){
 
 			for(let i = 0; i < files.length; i++){
 				if(files[i].split(`@`)[0] >= body.minlat && files[i].split(`@`)[0] <= body.maxlat && files[i].split(`@`)[1] >= body.minlng && files[i].split(`@`)[1] <= body.maxlng){
-					console.log(`go`);
+					// console.log(`go`);
 					sendArr.push(files[i]);
 				}
 			}
@@ -98,6 +98,5 @@ function getFile(req, res){
 			console.log(typeof file);
 			res.write(file);
 			res.end();
-		});
-	})
+		});	});
 }

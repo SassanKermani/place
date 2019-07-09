@@ -19,17 +19,26 @@
 			width: 100vw;
 			height: 33vh;
 		}
+		.navBarButton{
+			background-color: yellow;
+			width: 33vw;
+			height: 100%
+		}
 		#content{
 			background-color: blue;
 			width: 100vw;
-			height: 33vh;
+			height: 0vh;
 		}
 
 	</style>
 </head>
 <body>
 	<div id="map"></div>
-	<div id="navBar"></div>
+	<div id="navBar">
+		<button class="navBarButton">content</button>
+		<button class="navBarButton">post</button>
+		<button class="navBarButton">map</button>
+	</div>
 	<div id="content"></div>
 	<script type="text/javascript">
 
@@ -107,6 +116,11 @@
 				width: 100vw;
 				height: ${navBarHeight}vh;
 			}
+			.navBarButton{
+				background-color: yellow;
+				width: 33vw;
+				height: 100%
+			}
 			#content{
 				background-color: blue;
 				width: 100vw;
@@ -147,6 +161,11 @@
 				background-color: green;
 				width: 100vw;
 				height: ${navBarHeight}vh;
+			}
+			.navBarButton{
+				background-color: yellow;
+				width: 33vw;
+				height: 100%
 			}
 			#content{
 				background-color: blue;
@@ -189,6 +208,11 @@
 				width: 100vw;
 				height: ${navBarHeight}vh;
 			}
+			.navBarButton{
+				background-color: yellow;
+				width: 33vw;
+				height: 100%
+			}
 			#content{
 				background-color: blue;
 				width: 100vw;
@@ -201,6 +225,51 @@
 				map.invalidateSize();
 			}
 
+		}
+
+		function contentVew(){
+			document.getElementsByTagName('style')[0].innerHTML = ``;
+			if(mapHeight > 0){
+				mapHeight = mapHeight - 1;
+			}
+			if(navBarHeight >= 10){
+				navBarHeight = navBarHeight - 1;
+			}
+			if(contentHeight <= 90){
+				contentHeight = contentHeight + 1;
+			}
+
+			document.getElementsByTagName('style')[0].innerHTML = `
+			body{
+				margin: 0px;
+				display: grid;
+			}
+			#map{
+				background-color: red;
+				width: 100vw;
+				height: ${mapHeight}vh;
+			}
+			#navBar{
+				background-color: green;
+				width: 100vw;
+				height: ${navBarHeight}vh;
+			}
+			.navBarButton{
+				background-color: yellow;
+				width: 33vw;
+				height: 100%
+			}
+			#content{
+				background-color: blue;
+				width: 100vw;
+				height: ${contentHeight}vh;
+			}`;
+
+			if(mapHeight > 48 | navBarHeight >= 10 | contentHeight <= 90){
+				window.requestAnimationFrame(contentVew);
+			}else{
+				map.invalidateSize();
+			}
 		}
 
 	</script>
