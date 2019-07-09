@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+	<title></title>
+	<style type="text/css">
+		body{
+			margin: 0px;
+			display: grid;
+		}
+		#map{
+			/*background-color: red;*/
+			width: 100vw;
+			height: 34vh;
+		}
+		#navBar{
+			background-color: green;
+			width: 100vw;
+			height: 33vh;
+		}
+		#content{
+			background-color: blue;
+			width: 100vw;
+			height: 33vh;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="map"></div>
+	<div id="navBar"></div>
+	<div id="content"></div>
+	<script type="text/javascript">
+
+		let postion = false;
+		let map;
+
+		navigator.geolocation.watchPosition((newPos)=>{
+			if(!postion){
+
+				postion = newPos;
+				
+				map = L.map('map').setView([newPos.coords.latitude, newPos.coords.longitude], 12);				//cange this 12 to a 15 latter
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}).addTo(map);
+				// document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+			}
+			postion = newPos;
+
+			// get data
+
+		}, ()=>{
+
+			map = L.map('map').setView([0, 0], 1);
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}).addTo(map);
+				document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+
+				// postion = `NAN`;					//this is important 
+
+		}, {timeout:2000});
+
+		/*----------  Anamations  ----------*/
+		
+		let mapHeight = 34;
+		let navBarHeight = 33; 
+		let contentHeight = 33;
+
+		function transitionVew(){
+			document.getElementsByTagName('style')[0].innerHTML = ``;
+			if(mapHeight < 34){
+				mapHeight = mapHeight + 1;
+			}
+			if(mapHeight > 34){
+				mapHeight = mapHeight - 1;
+			}
+			if(navBarHeight < 33){
+				navBarHeight = navBarHeight + 1;
+			}
+			if(navBarHeight > 33){
+				navBarHeight = navBarHeight - 1;
+			}
+			if(contentHeight < 33){
+				contentHeight = contentHeight + 1;
+			}
+			if(contentHeight > 33){
+				contentHeight = contentHeight - 1;
+			}
+
+			document.getElementsByTagName('style')[0].innerHTML = `
+			body{
+				margin: 0px;
+				display: grid;
+			}
+			#map{
+				background-color: red;
+				width: 100vw;
+				height: ${mapHeight}vh;
+			}
+			#navBar{
+				background-color: green;
+				width: 100vw;
+				height: ${navBarHeight}vh;
+			}
+			#content{
+				background-color: blue;
+				width: 100vw;
+				height: ${contentHeight}vh;
+			}`;
+			
+			if(mapHeight != 34 | navBarHeight != 33 | contentHeight != 33){
+				window.requestAnimationFrame(transitionVew);
+			}else{
+				map.invalidateSize();
+			}
+
+		}
+
+		function mapVew(){
+			document.getElementsByTagName('style')[0].innerHTML = ``;
+			if(mapHeight <= 90){
+				mapHeight = mapHeight + 1;
+			}
+			if(navBarHeight >= 10){
+				navBarHeight = navBarHeight - 1;
+			}
+			if(contentHeight >= 0){
+				contentHeight = contentHeight - 1;
+			}
+
+			document.getElementsByTagName('style')[0].innerHTML = `
+			body{
+				margin: 0px;
+				display: grid;
+			}
+			#map{
+				background-color: red;
+				width: 100vw;
+				height: ${mapHeight}vh;
+			}
+			#navBar{
+				background-color: green;
+				width: 100vw;
+				height: ${navBarHeight}vh;
+			}
+			#content{
+				background-color: blue;
+				width: 100vw;
+				height: ${contentHeight}vh;
+			}`;
+
+			if(mapHeight <= 90 | navBarHeight >= 10 | contentHeight >= 0){
+				window.requestAnimationFrame(mapVew);
+			}else{
+				map.invalidateSize();
+			}
+
+		}
+
+		function hybridVew(){
+			document.getElementsByTagName('style')[0].innerHTML = ``;
+			if(mapHeight <= 48){
+				mapHeight = mapHeight + 1;
+			}
+			if(navBarHeight >= 10){
+				navBarHeight = navBarHeight - 1;
+			}
+			if(contentHeight <= 43){
+				contentHeight = contentHeight + 1;
+			}
+
+			document.getElementsByTagName('style')[0].innerHTML = `
+			body{
+				margin: 0px;
+				display: grid;
+			}
+			#map{
+				background-color: red;
+				width: 100vw;
+				height: ${mapHeight}vh;
+			}
+			#navBar{
+				background-color: green;
+				width: 100vw;
+				height: ${navBarHeight}vh;
+			}
+			#content{
+				background-color: blue;
+				width: 100vw;
+				height: ${contentHeight}vh;
+			}`;
+
+			if(mapHeight <= 48 | navBarHeight >= 10 | contentHeight <= 43){
+				window.requestAnimationFrame(hybridVew);
+			}else{
+				map.invalidateSize();
+			}
+
+		}
+
+	</script>
+</body>
+</html>
