@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+	<title>5</title>
+	<style type="text/css">
+		body{
+			background-color: orange;
+			margin: 0px;
+		}
+		#map{
+			background-color: red;
+			width: 100vw;
+			height: 90vh;
+		}
+		#post{
+			background-color: green;
+			width: 100vw;
+			height: 90vh;
+		}
+		#content{
+			background-color: blue;
+			width: 100vw;
+			height: 90vh;
+		}
+		#post{
+			background-color: yellow;
+			width: 100vw;
+			height: 10vh;
+			font-size: xx-large;
+			/*border-radius: 20%;*/
+		}
+
+		/* otherPost */
+		#otherPost{
+			z-index: 1;
+			background-color: green;
+			height: 100vh;
+			width: 100vw;
+		}
+
+	</style>
+</head>
+<body>
+	<div hidden id="otherPost">
+		<img id="img">
+		<h2 id="title"></h2>
+		<p id="message"></p>
+		<p></p>
+	</div>
+	<div id="body2">
+		<div id="map"></div>
+		<button id="post">Post</button>
+	</div>
+	<input hidden="true" id="picture" onchange="formatPicture()" type="file" accept="image/*" capture="camera" />
+	<script type="text/javascript">
+		
+		// Map
+		let postion = false;
+		let map;
+		let markers = [];
+
+		let dataURL = ``;
+		let post = document.getElementById('post');
+
+		/*----------  Post  ----------*/
+		post.onclick = ()=>{
+			console.log(`post`);
+			document.getElementById(`picture`).click();
+		}
+		function formatPicture(){
+			let file    = document.querySelector('input[type=file]').files[0];
+			let reader  = new FileReader();
+
+			reader.addEventListener("load", function () {
+				// console.log(reader.result)
+				dataURL = reader.result;
+				let title = prompt(`title`, ``);
+				let message = prompt(`message`, ``);
+
+				/*----------  Make Post Hear  ----------*/
+				let sendObj = {
+					title : title,
+					message : message,
+					dataURL : dataURL, 
+					lat : postion.coords.latitude,
+					lng : postion.coords.longitude,
+				}
+
+				console.log(sendObj);
+
+				let ajax = new XMLHttpRequest();
+				ajax.open("POST", "/sendData", true);
+				ajax.onreadystatechange = function(){
+					ajax.onreadystatechange = function(){
+						if(this.readyState == 4 && this.status == 200) {
+							console.log(ajax.responseText);
+						}
+					}
+				}
+				ajax.send(JSON.stringify(sendObj));
+				
+
+			}, false);
+
+			if (file) {				
+				reader.readAsDataURL(file);
+			}
+		}
+
+		/*----------  navigator  ----------*/
+		navigator.geolocation.watchPosition((newPos)=>{
+			if(!postion){
+
+				postion = newPos;
+				
+				map = L.map('map').setView([newPos.coords.latitude, newPos.coords.longitude], 15);							//cange this 12 to a 15 latter
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}).addTo(map);
+				// document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+				getData();
+			}
+			if(postion == `NAN`){
+				map.setView([newPos.coords.latitude, newPos.coords.longitude], 15);											//may be bad later
+				getData();
+			}
+			postion = newPos;
+
+		}, ()=>{
+
+			map = L.map('map').setView([0, 0], 1);
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}).addTo(map);
+				document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+
+				postion = `NAN`;					//this is important 
+				getData();
+
+		}, {timeout:2000});
+
+		/*----------  Get Data  ----------*/
+		function getData(){
+
+			for(let i = 0; i < markers.length; i++){
+				markers[i].remove()
+			}
+
+			let maxlat = map.getBounds()._northEast.lat;
+			let minlat = map.getBounds()._southWest.lat;
+			let maxlng = map.getBounds()._northEast.lng;
+			let minlng = map.getBounds()._southWest.lng;
+
+			let ajax = new XMLHttpRequest();
+			ajax.open("POST", "/getData", true);
+			ajax.onreadystatechange = function(){
+				ajax.onreadystatechange = function(){
+					if(this.readyState == 4 && this.status == 200) {
+						console.log(JSON.parse(ajax.responseText));
+
+						let responseText = JSON.parse(ajax.responseText).arr;
+						let numSqur = 20;
+						let southWest = map.getBounds()._southWest;
+						let northEast = map.getBounds()._northEast;
+
+						let tempPoints = [];
+						for(let i = 0; i < responseText.length; i++){
+							tempPoints[i] = [];
+							tempPoints[i][0] = responseText[i].split(`@`)[0];
+							tempPoints[i][1] = responseText[i].split(`@`)[1];
+							tempPoints[i][2] = responseText[i];
+						}
+
+						// console.log(tempPoints);
+
+						let latIncrement = (southWest.lat - northEast.lat) / numSqur;
+						let lngIncrement = (northEast.lng - southWest.lng) / numSqur;
+
+						let arr = [];
+
+						for(let i = 0; i <numSqur; i++){
+							arr[i] = [];
+							for(let ii = 0; ii <numSqur; ii++){
+								arr[i][ii] = [];
+								for(let iii = 0; iii < tempPoints.length; iii++){
+									if(tempPoints[iii][0] >= northEast.lat + (latIncrement * (i + 1)) && tempPoints[iii][0] <= northEast.lat + (latIncrement * i) && northEast.lng - (lngIncrement * ii) >= tempPoints[iii][1] && northEast.lng - (lngIncrement * (ii + 1)) <= tempPoints[iii][1]){
+										arr[i][ii].push(tempPoints[iii]);
+										// console.log(`added post`);
+									}
+								}
+
+								if(arr[i][ii].length < 2 && arr[i][ii].length > 0){
+									markers.push(
+									L.marker([arr[i][ii][0][0], arr[i][ii][0][1]])
+										.addTo(map)
+										.on('click', function(){
+											// console.log(arr[i][ii][0][2]);
+
+											let ajaxTwo = new XMLHttpRequest();
+											ajaxTwo.open("POST", "/getFile", true);
+											ajaxTwo.onreadystatechange = function(){
+												ajaxTwo.onreadystatechange = function(){
+													if(this.readyState == 4 && this.status == 200) {
+														// console.log(ajaxTwo.responseText);
+														let responseText = JSON.parse(ajaxTwo.responseText);
+														console.log(responseText);
+														
+														/*----------  THIS IS WERE WE ARE AT  ----------*/
+														swapPage();
+														document.getElementById(`img`).src = responseText.dataURL;
+														document.getElementById(`title`).innerHTML = responseText.title;
+														document.getElementById(`message`).innerHTML = responseText.message;
+													}
+												}
+											}
+											ajaxTwo.send(JSON.stringify({file : arr[i][ii][0][2]}));
+
+										}));
+
+								}else if(arr[i][ii].length > 0){
+									markers.push(
+										L.polygon([
+											[northEast.lat + (latIncrement * i), northEast.lng - (lngIncrement * ii)],
+											[northEast.lat + (latIncrement * (i + 1)), northEast.lng - (lngIncrement * ii)],
+											[northEast.lat + (latIncrement * (i + 1)), northEast.lng - (lngIncrement * (ii + 1))],
+											[northEast.lat + (latIncrement * i), northEast.lng - (lngIncrement * (ii + 1))]
+										]).addTo(map)//.bindPopup(str)
+										.on('click', function(){
+											
+											/*----------  THIS IS WERE WE ARE AT  ----------*/
+
+										})
+
+									);
+								}
+							}
+						}
+
+					}
+				}
+			}
+			ajax.send(JSON.stringify({ maxlat : maxlat, minlat : minlat, maxlng : maxlng, minlng : minlng}));
+		}
+
+		/*----------  Swap Page  ----------*/
+		function swapPage(){
+			if(document.getElementById(`otherPost`).hasAttribute(`hidden`)){
+				document.getElementById(`otherPost`).removeAttribute(`hidden`);
+				document.getElementById(`body2`).setAttribute(`hidden`, `true`);
+			}else{
+				document.getElementById(`body2`).removeAttribute(`hidden`);
+				document.getElementById(`otherPost`).setAttribute(`hidden`, `true`);
+			}
+		}
+		
+
+	</script>
+</body>
+</html>

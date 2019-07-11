@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js" integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og==" crossorigin=""></script>
+	<style type="text/css">
+		#map{
+			width: 100vw;
+			height: 90vh;
+		}
+		#navBar{
+			width: 100vw;
+			height: 10vh;
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+		}
+		#content{
+			width: 0vw;
+			height: 100vh;
+		}
+	</style>
+	<style type="text/css">
+		body{
+			margin: 0px;
+			/*display: grid;*/
+		}
+		.navBarButton{
+			/*change to use gridvew later*/
+			width: 1fr;
+			height: 100%;
+			border-radius: 10%;
+			margin-left: 1vw;
+			/*margin-right: 1vw;*/
+			text-align:center;
+			display: block;
+		}
+		.fontLarge{
+			font-size: large;
+			margin: 0px;
+		}
+	</style>
+	<title></title>
+</head>
+<body>
+	
+	<div id="map"></div>
+	<div id="navBar">
+		<button id="btnContent" class="navBarButton"><p class="fontLarge">content</p></button>
+		<button id="btnPost" class="navBarButton"><p class="fontLarge">post</p></button>
+		<button id="btnMap" class="navBarButton" style="margin-right: 1vw;"><p class="fontLarge">map</p></button>
+	</div>
+	<div id="content">
+
+		<!-- THIS IS WHERE WE ARE AT -->
+		<div id="post">
+			<input id="picture" hidden="" onchange="getdataURl()" type="file" accept="image/*" capture="camera" />
+			<img id="imgOfPic">
+		</div>
+
+	</div>
+	<script type="text/javascript">
+		
+		let postion = false;
+		let map;
+
+		// buttons
+		let btnMap = document.getElementById('btnMap');
+		let btnPost = document.getElementById('btnPost');
+		let btnContent = document.getElementById('btnContent');
+		let mapHeight = 90;
+		let navBarHeight = 10; 
+		let contentHeight = 0;
+
+		// map setup
+		navigator.geolocation.watchPosition((newPos)=>{
+			if(!postion){
+
+				postion = newPos;
+				
+				map = L.map('map').setView([newPos.coords.latitude, newPos.coords.longitude], 12);							//cange this 12 to a 15 latter
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}).addTo(map);
+				// document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+			}
+			if(postion == `NAN`){
+				map.setView([newPos.coords.latitude, newPos.coords.longitude], 12);											//may be bad later
+			}
+			postion = newPos;
+
+			// get data
+
+		}, ()=>{
+
+			map = L.map('map').setView([0, 0], 1);
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 18,
+					attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}).addTo(map);
+				document.getElementsByClassName( 'leaflet-control-attribution' )[0].style.display = 'none';				//fick on for facy things
+
+				postion = `NAN`;					//this is important 
+
+		}, {timeout:2000});
+
+		/*----------  Post  ----------*/
+		btnPost.onclick = ()=>{
+			btnContentAnamation();
+			document.getElementById(`picture`).click();
+
+		}
+		function getdataURl(){
+			let file    = document.querySelector('input[type=file]').files[0];
+			let reader  = new FileReader();
+
+			reader.addEventListener("load", function () {
+				console.log(reader.result)
+				document.getElementById(`imgOfPic`).src = reader.result;
+			}, false);
+
+			if (file) {
+				reader.readAsDataURL(file);
+			}
+		}
+		/*----------  Anamations 2.0  ----------*/
+		// MAP
+		btnMap.onclick = btnMapAnamation;
+		function btnMapAnamation(){
+			console.log(`btnMapAnamation`);
+			document.getElementsByTagName('style')[0].innerHTML = ``;
+			if(mapHeight > 90){
+				mapHeight--;
+			}
+			if(mapHeight < 90){
+				mapHeight++
+			}
+			if(navBar > 10){
+				navBar--;
+			}
+			if(navBar < 10){
+				navBar++
+			}
+			if(contentHeight > 0){
+				contentHeight--;
+			}
+
+			document.getElementsByTagName('style')[0].innerHTML = `
+			#map{
+				width: 100vw;
+				height: ${mapHeight}vh;
+			}
+			#navBar{
+				width: 100vw;
+				height: ${navBarHeight}vh;
+				display: grid;
+				grid-template-columns: 1fr 1fr 1fr;
+			}
+			#content{
+				width: 100vw;
+				height: ${contentHeight}vh;
+			}`;
+
+			if(mapHeight != 90 | navBarHeight != 10 | contentHeight != 0){
+				requestAnimationFrame(btnMapAnamation);
+			}else{
+				// map.invalidateSize();
+			}
+			map.invalidateSize();
+		}
+
+		//POST
+		btnContent.onclick = btnContentAnamation;
+		// btnPost.onclick = btnContentAnamation;
+		function btnContentAnamation(){
+			console.log(`btnContentAnamation`);
+			document.getElementsByTagName('style')[0].innerHTML = ``;
+			if(mapHeight > 0){
+				mapHeight--;
+			}
+			if(mapHeight < 0){
+				mapHeight++
+			}
+			if(navBar > 10){
+				navBar--;
+			}
+			if(navBar < 10){
+				navBar++
+			}
+			if(contentHeight > 90){
+				contentHeight--;
+			}
+			if(contentHeight < 90){
+				contentHeight++
+			}
+
+			document.getElementsByTagName('style')[0].innerHTML = `
+			#map{
+				width: 100vw;
+				height: ${mapHeight}vh;
+			}
+			#navBar{
+				width: 100vw;
+				height: ${navBarHeight}vh;
+				display: grid;
+				grid-template-columns: 1fr 1fr 1fr;
+			}
+			#content{
+				width: 100vw;
+				height: ${contentHeight}vh;
+			}`;
+
+			if(mapHeight != 0 | navBarHeight != 10 | contentHeight != 90){
+				requestAnimationFrame(btnContentAnamation);
+			}else{
+				map.invalidateSize();
+			}
+			map.invalidateSize();
+		}
+
+	</script>
+</body>
+</html>

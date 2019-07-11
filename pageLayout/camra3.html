@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		#post{
+			background-color: red;
+			/*width: 25vh;
+			height: 25vh;*/
+			padding: 10%;
+			display: inline-block;
+		}
+	</style>
+</head>
+<body>
+	
+	<div id="post"> post </div>
+	<input hidden="true" id="picture" onchange="previewFile()" type="file" accept="image/*" capture="camera" />
+
+	<script type="text/javascript">
+		
+		let post = document.getElementById('post');
+		let picture = document.getElementById(`picture`);
+
+		post.onclick = ()=>{
+			// console.log(`post`);
+
+			picture.click();
+
+		}
+		
+		function previewFile(){
+			let file    = document.querySelector('input[type=file]').files[0];
+			let reader  = new FileReader();
+
+			reader.addEventListener("load", function () {
+				console.log(`reader.result`)
+				console.log(reader.result)
+			}, false);
+
+			if (file) {				
+				reader.readAsDataURL(file);
+			}
+		}
+
+	</script>
+</body>
+</html>

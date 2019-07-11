@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style type="text/css">
+		body{
+			margin: 0px;
+			/*display: grid;*/
+		}
+		#map{
+			width: 100vw;
+			height: 90vh;
+		}
+		#navBar{
+			width: 100vw;
+			height: 10vh;
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+		}
+		#content{
+			width: 90vw;
+			height: 100vh;
+		}
+		.navBarButton{
+			/*change to use gridvew later*/
+			width: 1fr;
+			height: 100%;
+			border-radius: 10%;
+			margin-left: 1vw;
+			text-align:center;
+			display: block;
+		}
+		.fontLarge{
+			font-size: large;
+			margin: 0px;
+		}
+	</style>
+	<title>4</title>
+</head>
+<body>
+	<div id="map"></div>
+	<div id="content" hidden="true">
+		<div id="post" hidden="true">
+			<input id="picture" hidden="" onchange="getdataURl()" type="file" accept="image/*" capture="camera" />
+		</div>
+	</div>
+	<div id="navBar">
+		<button id="btnContent" class="navBarButton"><p class="fontLarge">content</p></button>
+		<button id="btnPost" class="navBarButton"><p class="fontLarge">post</p></button>
+		<button id="btnMap" class="navBarButton" style="margin-right: 1vw;"><p class="fontLarge">map</p></button>
+	</div>
+<script type="text/javascript">
+	
+	let btnContent = document.getElementById('btnContent');
+	let btnPost = document.getElementById('btnPost');
+	let btnMap = document.getElementById('btnMap');
+
+	let mapHidden = false;
+	let contentHidden = true;
+	let postHidden;
+
+	/*----------  btn  ----------*/
+	btnPost.onclick = ()=>{
+		if(!mapHidden){
+			mapHidden = true;
+			contentHidden = false;
+		}
+
+	}
+
+</script>	
+</body>
+</html>

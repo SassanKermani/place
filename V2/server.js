@@ -21,6 +21,9 @@ http.createServer( (req, res)=>{
 		case(req.url == `/` && req.method == `GET`):
 			homePage(req, res);
 			break;
+		case(req.url == `/mobile` && req.method == `GET`):
+			mobile(req, res);
+			break;
 		case(req.url == `/getData` && req.method == `POST`):
 			getData(req, res);
 			break;
@@ -42,6 +45,15 @@ http.createServer( (req, res)=>{
 /*----------  homePage  ----------*/
 function homePage(req, res){
 	fs.readFile(`./homePage.html`, (err, data)=>{
+		if(err){throw err};
+		res.end(data);
+	});
+
+}
+
+/*----------  mobile  ----------*/
+function mobile(req, res){
+	fs.readFile(`./homepageMobal.html`, (err, data)=>{
 		if(err){throw err};
 		res.end(data);
 	});

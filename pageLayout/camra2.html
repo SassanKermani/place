@@ -5,10 +5,10 @@
 </head>
 <body>
 	
-	<!-- <input type="file" onchange="previewFile()"><br> -->
-	<input onchange="previewFile()" type="file" accept="image/*" capture="camera" />
+	<input id="one" onchange="previewFile()" type="file" accept="image/*" capture="camera" />
 	<br>
 	<img src="" height="200" alt="Image preview...">
+
 	<script type="text/javascript">
 		function previewFile() {
 			var preview = document.querySelector('img');
@@ -25,6 +25,12 @@
 				reader.readAsDataURL(file);
 			}
 		}
+
+		function one(){
+			document.getElementById('one').click();
+		}
+
+
 	</script>
 </body>
 </html>
